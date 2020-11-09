@@ -6,6 +6,7 @@ import {
   Unique,
 } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
+import { NotAcceptableException } from '@nestjs/common';
 
 @Entity()
 @Unique(['username'])
@@ -29,7 +30,11 @@ export class User extends BaseEntity {
   salt: string;
 
   async validatePassword(password: string): Promise<boolean> {
-    const hash = await bcrypt.hash(password, this.salt);
-    return hash === this.password;
+    try {
+      const hash = await bcrypt.hash(password, this.salt);
+      return hash === this.password;
+    } catch (e) {
+      throw new NotAcceptableException('Username and password does not match!');
+    }
   }
 }
